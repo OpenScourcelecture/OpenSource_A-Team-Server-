@@ -3,10 +3,10 @@ package server;
 import java.io.IOException;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
@@ -16,34 +16,26 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-class FrameExam
-{
-	private static FrameExam exam = new FrameExam();
-	JFrame frame = new JFrame("Quiz");
-	JTextArea label = new JTextArea();
-	JScrollPane sp = new JScrollPane(label);
-	
-	public static FrameExam getFrame() {
-		return exam;
-	}
-	
-	public void createFrame()
-	{
-		//frame.add(label);
-		frame.setSize(500, 600);
-		frame.setVisible(true);
-		//label.setHorizontalAlignment(SwingConstants.CENTER);
-		//label.setVerticalAlignment(SwingConstants.CENTER);
-		//contentPane.add(sp);
-		frame.add(label);
-	}
-	
-	public void text(String text) {
-		label.setText(text);
-		frame.add(label);
-	}
-}
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import server.JavaFX_Gui2;
 
 class DBManager {
 	String driver = "org.mariadb.jdbc.Driver";
@@ -96,38 +88,142 @@ class DBManager {
 	}
 }
 
-public class ChatServer {
-
-	public static ArrayList<PrintWriter> m_OutputList;
+public class ChatServer extends Application{
+	public static ExecutorService threadpool;
+	public static Vector<ClientManagerThread> clients = new Vector<ClientManagerThread>();
+	
+	ServerSocket serverSocket;
+	
+	
+	VBox root = new VBox();
+   	TextArea rootMessage = new TextArea();
+   	static TextArea chatlog = new TextArea();
+   	TextArea loging = new TextArea();
+   	TextArea quizDB = new TextArea();
+   	Button sendButton = new Button();
+   	GridPane grid = new GridPane();
+	
+	@Override
+	public void start(Stage stage) {
+	   	try {
+		   	root.setPadding(new Insets(10)); // 안쪽 여백 설정
+		   	root.setSpacing(10); // 컨트롤 간의 수평 간격 설정
+		   	rootMessage.setDisable(true);
+	    	rootMessage.prefWidthProperty().bind(stage.widthProperty());
+	    	chatlog.setDisable(true);
+	    	chatlog.prefWidthProperty().bind(stage.widthProperty());
+	    	chatlog.prefHeightProperty().bind(stage.heightProperty());
+	    	
+	    	loging.setDisable(true);
+	    	loging.prefWidthProperty().bind(stage.widthProperty());
+	    	loging.prefHeightProperty().bind(stage.heightProperty());
+		    	
+	    	quizDB.setDisable(true);
+	    	quizDB.prefWidthProperty().bind(stage.widthProperty());
+	    	quizDB.prefHeightProperty().bind(stage.heightProperty());
+		    	
+	    	sendButton.setText("전 송");
+	    	sendButton.prefWidthProperty().bind(stage.widthProperty());
+	    	sendButton.setMaxWidth(1000);
+		    	
+	    	TextField chatField = new TextField();
+	    	chatField.prefWidthProperty().bind(stage.widthProperty());
+	
+	    	grid.setVgap(10);
+	    	grid.setHgap(10);
+	    	grid.add(chatlog, 0, 0, 2, 2);
+	    	grid.add(chatField, 0, 2, 1, 1);
+	    	grid.add(sendButton, 1, 2, 1, 1);
+	    	grid.add(loging, 2, 0, 1, 1); 
+	    	grid.add(quizDB, 2, 1, 1, 1);
+		    	
+	    	sendButton.setOnAction(new EventHandler<ActionEvent>() {
+		    		 
+	    	    @Override
+	   	    public void handle(ActionEvent event) {
+	    	    	
+	    	    	chatlog.appendText(chatField.getText() + "\n");
+	    	    	chatField.setText("");
+	    	    	chatField.requestFocus();
+	    	    }
+	    	});
+		    	
+	    	ObservableList<Node> list = root.getChildren();
+	    	list.add(rootMessage);
+	    	list.add(grid);
+		    	//list.add(grid2);
+	
+		    	Scene scene = new Scene(root, 500, 500);
+	
+	    	stage.setTitle("채팅창");
+	    	stage.setScene(scene);
+	    	stage.show();	
+    	
+    	} catch(Exception e) {
+    		System.out.println(e);
+    	}
+	}
+	
+	public void startServer(String IP, int port) {
+		try {
+			serverSocket = new ServerSocket();
+			serverSocket.bind(new InetSocketAddress(IP, port));
+		} catch(Exception e) {
+			e.printStackTrace();
+			if(!serverSocket.isClosed())
+				stopServer();
+			return;
+		}
+		
+		Runnable thread = new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						Socket socket = serverSocket.accept();
+						clients.add(new ClientManagerThread(socket));
+						System.out.println("[클라이언트 접속] "
+								+ socket.getRemoteSocketAddress()
+								+ ": " + Thread.currentThread().getName());
+						chatlog.appendText("[클라이언트 접속] "
+								+ "\n" + socket.getRemoteSocketAddress()
+								+ ": " + Thread.currentThread().getName() + "\n");
+					} catch(Exception e) {
+						if(!serverSocket.isClosed())
+							stopServer();
+						break;
+					}
+				}
+			}
+		};
+		
+		threadpool = Executors.newCachedThreadPool();
+		threadpool.submit(thread);
+	}
+	
+	public void stopServer() {
+		try {
+			Iterator<ClientManagerThread> iterator = clients.iterator();
+			while(iterator.hasNext()) {
+				ClientManagerThread client = iterator.next();
+				client.socket.close();
+				iterator.remove();
+			}
+			
+			if(serverSocket != null && !serverSocket.isClosed())
+				serverSocket.close();
+			if(threadpool != null && !threadpool.isShutdown())
+				threadpool.shutdown();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		m_OutputList = new ArrayList<PrintWriter>();
-		
-			try {				
-				FrameExam temp = new FrameExam();
-				temp = FrameExam.getFrame();
-				temp.createFrame();
-				
-				ServerSocket s_socket = new ServerSocket(8888);
-				
-				while(true)
-				{
-					Socket c_socket = s_socket.accept();
-					
-					ClientManagerThread c_thread = new ClientManagerThread();
-					c_thread.setSocket(c_socket);
-					
-					m_OutputList.add(new PrintWriter(c_socket.getOutputStream()));
-					
-					c_thread.start();
-				}
-				
-				
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		ChatServer cs = new ChatServer();
+		cs.startServer("192.168.0.13", 8888);
+		launch(args);
 	}
 
 }

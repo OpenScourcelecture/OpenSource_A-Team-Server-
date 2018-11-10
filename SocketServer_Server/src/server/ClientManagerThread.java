@@ -1,91 +1,79 @@
 package server;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
-import server.ChatServer;
-
 
 public class ClientManagerThread extends Thread{
 
-	private Socket m_socket;
-	private String m_ID;
+	Socket socket;
 	
-	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		super.run();
-		DBManager dbm = new DBManager();
-		//FrameExam exam = new FrameExam();
-		//exam.createFrame();
-		
-		try {
-			FrameExam temp = new FrameExam();
-			temp = FrameExam.getFrame();
-			
-			BufferedReader tmpbuffer = new BufferedReader(new InputStreamReader(m_socket.getInputStream()));
-			String text;
-			
-			while(true)
-			{
-				text = tmpbuffer.readLine();
-
-				if(text == null)
-				{
-					System.out.println(m_ID + "이(가) 나갔습니다.");
-					for(int i = 0; i < ChatServer.m_OutputList.size(); ++i)
-					{
-						ChatServer.m_OutputList.get(i).println(m_ID + "이(가) 나갔습니다.");
-						ChatServer.m_OutputList.get(i).flush();
-					}
-					
-					temp.label.append(m_ID + "이(가) 나갔습니다.\n");
-					break;
-				}
-				
-				String[] split = text.split("-Client");
-				if(split.length == 2 && split[0].equals("ID"))
-				{
-					m_ID = split[1];
-					System.out.println(m_ID + "이(가) 입장하였습니다.");
-					for(int i = 0; i < ChatServer.m_OutputList.size(); ++i)
-					{
-						ChatServer.m_OutputList.get(i).println(m_ID + "이(가) 입장하였습니다.");
-						ChatServer.m_OutputList.get(i).flush();
-					}
-					
-					temp.label.append(m_ID + "이(가) 입장하였습니다.\n");
-					continue;
-				}
-				
-				for(int i = 0; i < ChatServer.m_OutputList.size(); ++i)
-				{
-					ChatServer.m_OutputList.get(i).println(m_ID + "> "+ text);
-					ChatServer.m_OutputList.get(i).flush();
-				}
-				
-				temp.label.append(m_ID + "> " +text+"\n");
-				System.out.println(m_ID + "> " + text);
-				
-				switch(text) {
-				case "1번": dbm.select();
-				}
-
-			}
-			
-			ChatServer.m_OutputList.remove(new PrintWriter(m_socket.getOutputStream()));
-			m_socket.close();
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+	public ClientManagerThread(Socket socket) {
+		this.socket = socket;
+		receive();
 	}
 	
-	public void setSocket(Socket _socket)
-	{
-		m_socket = _socket;
+	public void receive() {
+		Runnable thread = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					while(true) {
+						InputStream in = socket.getInputStream();
+						byte[] buffer = new byte[512];
+						
+						int length = in.read(buffer);
+						if (length == -1) throw new IOException();
+						System.out.println("[메세지 수신 성공] "
+								+ socket.getRemoteSocketAddress()
+								+ ": " + Thread.currentThread().getName());
+						
+						String message = new String(buffer, 0, length, "UTF-8");
+						for(ClientManagerThread client : ChatServer.clients) {
+							client.send(message);
+						}
+					}
+				} catch(Exception e) {
+					try {
+						System.out.println("[메세지 수신 오류] "
+								+ socket.getRemoteSocketAddress()
+								+ ": " + Thread.currentThread().getName());
+						ChatServer.clients.remove(ClientManagerThread.this);
+						socket.close();
+					} catch(Exception e2) {
+						e2.printStackTrace();
+					}
+				}
+			}
+		};
+		
+		ChatServer.threadpool.submit(thread);
+	}
+	
+	public void send(String message) {
+		Runnable thread = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					OutputStream out = socket.getOutputStream();
+					byte[] buffer = message.getBytes("UTF-8");
+					out.write(buffer);
+					out.flush();
+				} catch(Exception e) {
+					try {
+						System.out.println("[메세지 송신 오류] "
+								+ socket.getRemoteSocketAddress()
+								+ ": " + Thread.currentThread().getName());
+						ChatServer.clients.remove(ClientManagerThread.this);
+						socket.close();
+					} catch(Exception e2) {
+						e2.printStackTrace();
+					}
+				}
+			}
+		};
+			
+		ChatServer.threadpool.submit(thread);
 	}
 }
