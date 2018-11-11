@@ -45,8 +45,18 @@ public class ClientManagerThread extends Thread{
 						}
 						
 						for(ClientManagerThread client : ChatServer.clients) {
-							if(message.length() > 5 && message.substring(0,5).equals("name:"))
-								client.send(message);
+							if(message.length() > 5 && message.substring(0,5).equals("name:")) {
+								for(int i=0; i<ChatServer.clients.size(); i++) {
+									client.send("userinfo" + ChatServer.name.get(i).substring(5));
+								}
+								
+							}
+							
+							else if(message.length() >= 2 && message.substring(0,1).equals("q")) {
+								client.send(Thread.currentThread().getName().substring(5) + "님이 채팅방을 나갔습니다.");
+								client.send("delete" + Thread.currentThread().getName().substring(5));
+							}
+							
 							else {
 								client.send("m" + Thread.currentThread().getName().substring(5) + " > " + message);
 							}
@@ -66,7 +76,6 @@ public class ClientManagerThread extends Thread{
 						System.out.println("[메세지 수신 오류] "
 								+ socket.getRemoteSocketAddress()
 								+ ": " + Thread.currentThread().getName());	
-						
 						ChatServer.clients.remove(ClientManagerThread.this);
 						socket.close();
 					} catch(Exception e2) {

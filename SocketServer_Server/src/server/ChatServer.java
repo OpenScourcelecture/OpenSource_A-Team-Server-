@@ -86,7 +86,7 @@ public class ChatServer extends Application{
    	static TextArea quizDB = new TextArea("퀴즈 목록\n--------\n");
    	static Button sendButton = new Button();
    	static GridPane grid = new GridPane();
-   	static TextInputDialog dialog = new TextInputDialog();
+   	//static TextInputDialog dialog = new TextInputDialog();
 	
 	@Override
 	public void start(Stage stage) {
@@ -123,15 +123,6 @@ public class ChatServer extends Application{
 	    	grid.add(sendButton, 1, 2, 1, 1);
 	    	grid.add(loging, 2, 0, 1, 1); 
 	    	grid.add(quizDB, 2, 1, 1, 1);
-	    	
-	    	dialog.setTitle("이름 입력 창");
-	    	dialog.setHeaderText("채팅 방에서 사용할 이름을 입력하세요");
-	    	dialog.setContentText("이름 : ");
-
-	    	Optional<String> result = dialog.showAndWait();
-	    	if (result.isPresent()){
-	    	    System.out.println("Your name: " + result.get());
-	    	}
 	    	    	
 	    	sendButton.setOnAction(new EventHandler<ActionEvent>() { 		
 	    		@Override
