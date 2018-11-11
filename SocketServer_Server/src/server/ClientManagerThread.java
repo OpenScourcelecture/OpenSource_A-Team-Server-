@@ -8,10 +8,17 @@ import java.net.Socket;
 public class ClientManagerThread extends Thread{
 
 	Socket socket;
-	
+	static String temp;
 	public ClientManagerThread(Socket socket) {
 		this.socket = socket;
 		receive();
+	}
+	
+	public void logingList() {
+		ChatServer.loging.setText("접속 중인 사람\n------------\n");
+		for(int i=0; i<ChatServer.name.size(); i++) {
+			ChatServer.loging.appendText((ChatServer.name.get(i)).substring(5) + "\n");
+		}
 	}
 	
 	public void receive() {
@@ -30,15 +37,36 @@ public class ClientManagerThread extends Thread{
 								+ ": " + Thread.currentThread().getName());
 						
 						String message = new String(buffer, 0, length, "UTF-8");
-						for(ClientManagerThread client : ChatServer.clients) {
-							client.send(message);
+						
+						if(message.length() > 5 && message.substring(0,5).equals("name:")) {
+							ChatServer.name.add(message);
+							Thread.currentThread().setName(message);
+							logingList();
 						}
+						
+						for(ClientManagerThread client : ChatServer.clients) {
+							if(message.length() > 5 && message.substring(0,5).equals("name:"))
+								client.send(message);
+							else {
+								client.send("m" + Thread.currentThread().getName().substring(5) + " > " + message);
+							}
+						}
+						
+						for(int i=0; i<ChatServer.name.size(); i++) {
+							if(message.substring(1).equals(ChatServer.name.get(i))) {
+								ChatServer.name.remove(i);
+								break;	
+							}
+						}
+						
+						logingList();
 					}
 				} catch(Exception e) {
 					try {
 						System.out.println("[메세지 수신 오류] "
 								+ socket.getRemoteSocketAddress()
-								+ ": " + Thread.currentThread().getName());
+								+ ": " + Thread.currentThread().getName());	
+						
 						ChatServer.clients.remove(ClientManagerThread.this);
 						socket.close();
 					} catch(Exception e2) {
@@ -65,7 +93,6 @@ public class ClientManagerThread extends Thread{
 						System.out.println("[메세지 송신 오류] "
 								+ socket.getRemoteSocketAddress()
 								+ ": " + Thread.currentThread().getName());
-						ChatServer.clients.remove(ClientManagerThread.this);
 						socket.close();
 					} catch(Exception e2) {
 						e2.printStackTrace();

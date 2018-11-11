@@ -1,41 +1,24 @@
 package server;
 
-import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Vector;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javafx.application.Application;
-import javafx.application.Platform;
+import java.io.*;
+import java.sql.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import javafx.application.*;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.*;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
-import server.JavaFX_Gui2;
 
 class DBManager {
 	String driver = "org.mariadb.jdbc.Driver";
@@ -91,34 +74,38 @@ class DBManager {
 public class ChatServer extends Application{
 	public static ExecutorService threadpool;
 	public static Vector<ClientManagerThread> clients = new Vector<ClientManagerThread>();
-	
+	public static ArrayList<String> name = new ArrayList<String>(); 
+
 	ServerSocket serverSocket;
 	
 	
 	VBox root = new VBox();
-   	TextArea rootMessage = new TextArea();
+	static TextArea rootMessage = new TextArea();
    	static TextArea chatlog = new TextArea();
-   	TextArea loging = new TextArea();
-   	TextArea quizDB = new TextArea();
-   	Button sendButton = new Button();
-   	GridPane grid = new GridPane();
+   	static TextArea loging = new TextArea("접속 중인 사람\n------------\n");
+   	static TextArea quizDB = new TextArea("퀴즈 목록\n--------\n");
+   	static Button sendButton = new Button();
+   	static GridPane grid = new GridPane();
+   	static TextInputDialog dialog = new TextInputDialog();
 	
 	@Override
 	public void start(Stage stage) {
-	   	try {
+	   	try {	   		
 		   	root.setPadding(new Insets(10)); // 안쪽 여백 설정
 		   	root.setSpacing(10); // 컨트롤 간의 수평 간격 설정
-		   	rootMessage.setDisable(true);
+		   	
+		   	rootMessage.setEditable(false);
 	    	rootMessage.prefWidthProperty().bind(stage.widthProperty());
-	    	chatlog.setDisable(true);
+		   	
+	    	chatlog.setEditable(false);
 	    	chatlog.prefWidthProperty().bind(stage.widthProperty());
 	    	chatlog.prefHeightProperty().bind(stage.heightProperty());
 	    	
-	    	loging.setDisable(true);
+	    	loging.setEditable(false);
 	    	loging.prefWidthProperty().bind(stage.widthProperty());
 	    	loging.prefHeightProperty().bind(stage.heightProperty());
 		    	
-	    	quizDB.setDisable(true);
+	    	quizDB.setEditable(false);
 	    	quizDB.prefWidthProperty().bind(stage.widthProperty());
 	    	quizDB.prefHeightProperty().bind(stage.heightProperty());
 		    	
@@ -136,11 +123,19 @@ public class ChatServer extends Application{
 	    	grid.add(sendButton, 1, 2, 1, 1);
 	    	grid.add(loging, 2, 0, 1, 1); 
 	    	grid.add(quizDB, 2, 1, 1, 1);
-		    	
-	    	sendButton.setOnAction(new EventHandler<ActionEvent>() {
-		    		 
-	    	    @Override
-	   	    public void handle(ActionEvent event) {
+	    	
+	    	dialog.setTitle("이름 입력 창");
+	    	dialog.setHeaderText("채팅 방에서 사용할 이름을 입력하세요");
+	    	dialog.setContentText("이름 : ");
+
+	    	Optional<String> result = dialog.showAndWait();
+	    	if (result.isPresent()){
+	    	    System.out.println("Your name: " + result.get());
+	    	}
+	    	    	
+	    	sendButton.setOnAction(new EventHandler<ActionEvent>() { 		
+	    		@Override
+	    		public void handle(ActionEvent event) {
 	    	    	
 	    	    	chatlog.appendText(chatField.getText() + "\n");
 	    	    	chatField.setText("");
@@ -148,6 +143,17 @@ public class ChatServer extends Application{
 	    	    }
 	    	});
 		    	
+	    	chatField.setOnKeyPressed(new EventHandler<KeyEvent>() {
+	    		@Override
+	    		public void handle(KeyEvent event) {
+	    			if(event.getCode() == KeyCode.ENTER) {
+		    	    	chatlog.appendText(chatField.getText() + "\n");
+		    	    	chatField.setText("");
+		    	    	chatField.requestFocus();
+	    			}
+	    		}
+	    	});
+	    	
 	    	ObservableList<Node> list = root.getChildren();
 	    	list.add(rootMessage);
 	    	list.add(grid);
