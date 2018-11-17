@@ -20,56 +20,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
-class DBManager {
-	String driver = "org.mariadb.jdbc.Driver";
-	String url = "jdbc:mysql://192.168.0.13:3306/test";
-	String uId = "root";
-	String uPwd = "1234";
-	
-	Connection con;
-	PreparedStatement pstmt;
-	ResultSet rs;
-	
-	public DBManager() {
-		try {
-			Class.forName(driver);
-			con = DriverManager.getConnection(url, uId, uPwd);
-			if(con != null) {System.out.println("데이터 베이스 접속 성공");}
-		} catch(ClassNotFoundException e) {
-			System.out.println("데이터 베이스 로드 실패");
-		} catch(SQLException e) {
-			System.out.println("데이터 베이스 접속 실패");
-		}
-	}
-	
-	public String select() {
-		String sql = "select * from a";
-		try {
-			pstmt = con.prepareStatement(sql);
-			rs = pstmt.executeQuery();
-			String Code;
-			int Code2;
-			while(rs.next()) {
-				Code2 = rs.getInt("answerNum");
-				System.out.print(Code2);
-				Code = rs.getString("answer0");
-				System.out.println(". " + Code);
-				Code = rs.getString("answer1");
-				System.out.println("1번 보기 : " + Code);
-				Code = rs.getString("answer2");
-				System.out.println("2번 보기 : " + Code);
-				Code = rs.getString("answer3");
-				System.out.println("3번 보기 : " + Code);
-				Code = rs.getString("answer4");
-				System.out.println("4번 보기 : " + Code);
-				return Code;
-			}
-		}catch(SQLException e) {
-			System.out.println("쿼리 수행 실패");
-		}
-		return null;
-	}
-}
+
 
 public class ChatServer extends Application{
 	public static ExecutorService threadpool;
@@ -77,17 +28,18 @@ public class ChatServer extends Application{
 	public static ArrayList<String> name = new ArrayList<String>(); 
 
 	ServerSocket serverSocket;
+	static String quiz = "";
 	
-	
-	VBox root = new VBox();
-	static TextArea rootMessage = new TextArea();
+	HBox root = new HBox();
+	static TextArea rootMessage = new TextArea("");
    	static TextArea chatlog = new TextArea();
    	static TextArea loging = new TextArea("접속 중인 사람\n------------\n");
    	static TextArea quizDB = new TextArea("퀴즈 목록\n--------\n");
    	static Button sendButton = new Button();
    	static GridPane grid = new GridPane();
+	static TextField chatField = new TextField();
+
    	//static TextInputDialog dialog = new TextInputDialog();
-	
 	@Override
 	public void start(Stage stage) {
 	   	try {	   		
@@ -113,7 +65,6 @@ public class ChatServer extends Application{
 	    	sendButton.prefWidthProperty().bind(stage.widthProperty());
 	    	sendButton.setMaxWidth(1000);
 		    	
-	    	TextField chatField = new TextField();
 	    	chatField.prefWidthProperty().bind(stage.widthProperty());
 	
 	    	grid.setVgap(10);
@@ -127,9 +78,9 @@ public class ChatServer extends Application{
 	    	sendButton.setOnAction(new EventHandler<ActionEvent>() { 		
 	    		@Override
 	    		public void handle(ActionEvent event) {
-	    	    	
-	    	    	chatlog.appendText(chatField.getText() + "\n");
-	    	    	chatField.setText("");
+	    			quiz = chatField.getText();
+	    			chatlog.appendText(chatField.getText() + "\n");
+	    			chatField.setText("");
 	    	    	chatField.requestFocus();
 	    	    }
 	    	});
@@ -138,8 +89,9 @@ public class ChatServer extends Application{
 	    		@Override
 	    		public void handle(KeyEvent event) {
 	    			if(event.getCode() == KeyCode.ENTER) {
-		    	    	chatlog.appendText(chatField.getText() + "\n");
-		    	    	chatField.setText("");
+	    				quiz = chatField.getText();
+		    			chatlog.appendText(chatField.getText() + "\n");
+		    			chatField.setText("");
 		    	    	chatField.requestFocus();
 	    			}
 	    		}
