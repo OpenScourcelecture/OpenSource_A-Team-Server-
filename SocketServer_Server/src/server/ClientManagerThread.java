@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,7 +27,7 @@ import javafx.stage.Stage;
 
 class DBManager {
 	String driver = "org.mariadb.jdbc.Driver";
-	String url = "jdbc:mysql://192.168.0.13:3306/test";
+	String url = "jdbc:mysql://192.168.43.206:3306/test";
 	String uId = "root";
 	String uPwd = "1234";
 	
@@ -44,6 +45,28 @@ class DBManager {
 		} catch(SQLException e) {
 			System.out.println("데이터 베이스 접속 실패");
 		}
+	}
+	
+	public String showtableName() {
+		try {
+			DatabaseMetaData meta = con.getMetaData();			
+			ResultSet rs2 = meta.getTables(null, null, null, new String[] {"TABLE"});
+			String Code = "";
+			String temp = "";
+			while(rs2.next()) {
+				temp = rs2.getString("TABLE_NAME");
+				Code = Code + temp + "\n";
+			}
+			
+			ChatServer.quizDB.setText("접속 중인 사람\n------------\n");
+			ChatServer.quizDB.appendText(Code + "\n");
+		
+			return Code;
+		}catch(SQLException e) {
+			System.out.println("쿼리 수행 실패");
+		}
+		
+		return "";
 	}
 	
 	public String select(String table, int id) {
@@ -122,6 +145,11 @@ public class ClientManagerThread extends Thread{
 						
 						// 운영자 창에 유저들 추가하는 부분
 						if(message.length() > 5 && message.substring(0,5).equals("name:")) {
+							for(int i=0; i<ChatServer.name.size(); i++) {
+								if(ChatServer.name.get(i).equals(message)) {
+									message = message + (i+1);
+								}
+							}
 							ChatServer.name.add(message);
 							Thread.currentThread().setName(message);
 							logingList();
@@ -139,13 +167,12 @@ public class ClientManagerThread extends Thread{
 									} catch(Exception e) {
 										e.printStackTrace();
 									}
-									client.send("userinfo" + ChatServer.name.get(i).substring(5));
-									
+									client.send("userinfo" + ChatServer.name.get(i).substring(5));									
 								}
 								
 							}
 							
-							else if(message.length() >= 2 && message.substring(0,1).equals("q")) {
+							else if(message.length() >= 4 && message.substring(0,4).equals("quit")) {
 								client.send("m" + Thread.currentThread().getName().substring(5) + "님이 채팅방을 나갔습니다.");
 								client.send("delete" + Thread.currentThread().getName().substring(5));
 							}
@@ -161,8 +188,8 @@ public class ClientManagerThread extends Thread{
 						
 						if(message.equals("전공")) {
 							for(ClientManagerThread client : ChatServer.clients) {
-								int randomNum = (int)((Math.random()*10));
-								client.send(dbm.select("quiz1", randomNum));
+								int randomNum = (int)((Math.random()*10) + 1);
+								client.send(dbm.select("전공", randomNum));
 								client.send("mstartquiz");
 								try {
 									Thread.sleep(200);
@@ -173,13 +200,21 @@ public class ClientManagerThread extends Thread{
 						}
 						
 						for(int i=0; i<ChatServer.name.size(); i++) {
-							if(message.substring(1).equals(ChatServer.name.get(i))) {
+							if(message.length() >= 4 && message.substring(4).equals(ChatServer.name.get(i))) {
 								ChatServer.name.remove(i);
-								break;	
+								break;
 							}
 						}
 						
 						logingList();
+						for(ClientManagerThread client : ChatServer.clients) {
+							client.send("mDBquiz" + dbm.showtableName());
+							try {
+								Thread.sleep(200);
+							} catch(Exception e) {
+								e.printStackTrace();
+							}
+						}
 					}
 				} catch(Exception e) {
 					try {

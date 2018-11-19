@@ -171,7 +171,7 @@ public class ChatServer extends Application{
 	
 	public static void main(String[] args) {
 		ChatServer cs = new ChatServer();
-		cs.startServer("192.168.0.13", 8888);
+		cs.startServer("192.168.43.206", 8888);
 		launch(args);
 	}
 
