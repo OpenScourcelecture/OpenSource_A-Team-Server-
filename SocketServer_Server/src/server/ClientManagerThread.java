@@ -190,7 +190,7 @@ public class ClientManagerThread extends Thread{
 							for(ClientManagerThread client : ChatServer.clients) {
 								int randomNum = (int)((Math.random()*10) + 1);
 								client.send(dbm.select("Àü°ø", randomNum));
-								client.send("mstartquiz");
+								//client.send("mstartquiz");
 								try {
 									Thread.sleep(200);
 								} catch(Exception e) {

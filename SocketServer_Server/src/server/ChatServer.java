@@ -19,6 +19,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 
 
@@ -95,6 +96,18 @@ public class ChatServer extends Application{
 		    	    	chatField.requestFocus();
 	    			}
 	    		}
+	    	});
+	    	
+	    	stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+	            public void handle(WindowEvent we) {
+	    	    	try{
+	    	    		Thread.sleep(100);
+	    	    	}catch(Exception e){
+	    	    		e.printStackTrace();
+	    	    	}
+	    	    	stopServer();
+	    	    	stage.hide();
+	            }
 	    	});
 	    	
 	    	ObservableList<Node> list = root.getChildren();
