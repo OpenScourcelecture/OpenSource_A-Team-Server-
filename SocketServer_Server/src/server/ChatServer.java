@@ -187,6 +187,6 @@ public class ChatServer extends Application{
 		cs.startServer("192.168.43.206", 8888);
 		launch(args);
 	}
-
+ 
 }
 

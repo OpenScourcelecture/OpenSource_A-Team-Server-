@@ -112,6 +112,7 @@ public class ClientManagerThread extends Thread{
 	Socket socket;
 	static String temp;
 	DBManager dbm = new DBManager();	
+	static int count=0;
 	
 	public ClientManagerThread(Socket socket) {
 		this.socket = socket;
@@ -181,6 +182,15 @@ public class ClientManagerThread extends Thread{
 								send("m" + message);
 							}
 							
+							else if(message.length() >= 9 && message.substring(0,9).equals("userResult")) {
+								send("m" + Thread.currentThread().getName().substring(5) + " > " + message.substring(9));
+								try {
+									Thread.sleep(200);
+								} catch(Exception e) {
+									e.printStackTrace();
+								}
+							}
+							
 							else {
 								client.send("m" + Thread.currentThread().getName().substring(5) + " > " + message);
 							}
@@ -190,12 +200,28 @@ public class ClientManagerThread extends Thread{
 							for(ClientManagerThread client : ChatServer.clients) {
 								int randomNum = (int)((Math.random()*10) + 1);
 								client.send(dbm.select("전공", randomNum));
-								//client.send("mstartquiz");
 								try {
 									Thread.sleep(200);
 								} catch(Exception e) {
 									e.printStackTrace();
 								}
+							}
+						}
+						
+						else if(message.equals("다음")) {
+							count++;
+							if(count == ChatServer.name.size()) {
+								for(ClientManagerThread client : ChatServer.clients) {
+									int randomNum = (int)((Math.random()*10) + 1);
+									client.send(dbm.select("전공", randomNum));
+									try {
+										Thread.sleep(200);
+									} catch(Exception e) {
+										e.printStackTrace();
+									}
+								}
+								
+								count = 0;
 							}
 						}
 						
