@@ -33,5 +33,10 @@ insert into quiz1 values(22, '22.  내가 연결하고있는 서버를 확인하
 insert into quiz1 values(23, '23.  vim에서 커서의 위치 다음에 입력하고싶을 때 쓰는 키는?', '1. A', '2. o', '3. s', '4. a', a);
 insert into quiz1 values(24, '24.  현재 커서에서 한 글자를 삭제하고싶을 때 쓰는 키는? ', '1. x', '2. d', '3. dx', '4. dd', 1);
 insert into quiz1 values(25, '25.  현재 폴더에서 상위 폴더로 돌아가고싶을 때 사용하는 명령어는?' , '1. cd ..', '2. cd', '3. cd return', '4. cd back', 1); 
+insert into quiz1 values(26, '26.  vim표준모드에서 ZZ키를 입력하면 일어나는 현상으로 옳은것은?', '1. 저장', '2. vi 종료', '3. 저장 후 종료', '4. 강제 저장 후 종료', 3);
+insert into quiz1 values(27, '27.  다음중 컴퓨터 언어가 아닌것은?', '1. C', '2. C#', '3. C++', '4. C##', 4);
+insert into quiz1 values(28, '28.  표준모드에서 a를 입력했을 때 옳은 현상은?', '1. 커서의 위치에 입력', '2. 커서 위치 다음 칸부터 입력', '3. 커서의 이전 행에 입력', '4. 커서 행의 맨 마지막부터 입력', 2);
+insert into quiz1 values(29, '29.  ArithmeticException오류의 원인으로 옳은 것은?', '1. 어떤 수를 0으로 나눌 때', '2. 널 객체를 참조할 때', '3. 배열의 크기가 음수값인 경우', '4. 원하는 클래스를 찾지 못하였을 경우', 1);
+insert into quiz1 values(30, '30.  자바 언어를 처음 개발한 사람은?', '1. 제임스 고슬링', '2. 빌게이츠', '3. 팁 머너스 리', '4. 스티브 잡스', 1);
 
 select * from quiz1
