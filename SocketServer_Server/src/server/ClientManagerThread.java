@@ -27,7 +27,7 @@ import javafx.stage.Stage;
 
 class DBManager {
 	String driver = "org.mariadb.jdbc.Driver";
-	String url = "jdbc:mysql://192.168.43.206:3306/test";
+	String url = "jdbc:mysql://192.168.0.1:3306/test";
 	String uId = "root";
 	String uPwd = "1234";
 	
@@ -69,7 +69,7 @@ class DBManager {
 		return "";
 	}
 	
-	public String select(String table, int id) {
+	public String select(String table, int id, String name) {
 		String sql = "select * from " + table + " where num = " + id + ";";
 		String temp = "";
 		try {
@@ -98,7 +98,7 @@ class DBManager {
 				Code2 = rs.getInt("result");
 				System.out.println(Code2);
 				
-				return "mquiz^" + quiznum + "^" + temp + "^" + Code2;
+				return "mquiz" + name + "^" + quiznum + "^" + temp + "^" + Code2;
 			}
 		}catch(SQLException e) {
 			System.out.println("쿼리 수행 실패");
@@ -126,7 +126,7 @@ public class ClientManagerThread extends Thread{
 		}
 	}
 	
-	public void receive() {
+	public synchronized void receive() {
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
@@ -149,6 +149,7 @@ public class ClientManagerThread extends Thread{
 							for(int i=0; i<ChatServer.name.size(); i++) {
 								if(ChatServer.name.get(i).equals(message)) {
 									message = message + (i+1);
+									send("setName" + message);
 								}
 							}
 							ChatServer.name.add(message);
@@ -157,7 +158,6 @@ public class ClientManagerThread extends Thread{
 						}
 						
 						// 전공이라는 입력이 올시 문제 출력
-						
 				
 						for(ClientManagerThread client : ChatServer.clients) {
 							if(message.length() > 5 && message.substring(0,5).equals("name:")) {
@@ -166,11 +166,10 @@ public class ClientManagerThread extends Thread{
 									try {
 										Thread.sleep(200);
 									} catch(Exception e) {
-										e.printStackTrace();
+										System.out.println("sleep 오류");									
 									}
 									client.send("userinfo" + ChatServer.name.get(i).substring(5));									
 								}
-								
 							}
 							
 							else if(message.length() >= 4 && message.substring(0,4).equals("quit")) {
@@ -179,45 +178,68 @@ public class ClientManagerThread extends Thread{
 							}
 							
 							else if(message.length() >= 2 && message.substring(0,2).equals("답:")) {
-								send("m" + message);
+								send("m");
 							}
 							
-							else if(message.length() >= 9 && message.substring(0,9).equals("userResult")) {
-								send("m" + Thread.currentThread().getName().substring(5) + " > " + message.substring(9));
-								try {
-									Thread.sleep(200);
-								} catch(Exception e) {
-									e.printStackTrace();
+							else if(message.length() >= 7 && message.substring(0,7).equals("endquiz")) {
+								count++;
+								if(count==ChatServer.clients.size()) {
+									for(ClientManagerThread client2 : ChatServer.clients) {
+										client2.send("mresultrequest");
+									}
+									
+									count = 0;
 								}
 							}
+							
+							else if(message.length() >= 10 && message.substring(0,10).equals("resultsend")) {
+								ChatServer.chatlog.appendText(message.substring(10) + "\n");
+							}
+							
+							else if(message.length() >= 3 && message.substring(0, 3).equals("다음/")) {}
 							
 							else {
 								client.send("m" + Thread.currentThread().getName().substring(5) + " > " + message);
 							}
-						}
+						}https://github.com/OpenScourcelecture/OpenSource_A-Team-Server-.git
 						
 						if(message.equals("전공")) {
 							for(ClientManagerThread client : ChatServer.clients) {
-								int randomNum = (int)((Math.random()*10) + 1);
-								client.send(dbm.select("전공", randomNum));
+								int randomNum = (int)((Math.random()*17) + 1);
+								client.send(dbm.select("전공", randomNum, "전공"));
 								try {
 									Thread.sleep(200);
 								} catch(Exception e) {
-									e.printStackTrace();
-								}
+									System.out.println("sleep 오류");								}
 							}
 						}
 						
-						else if(message.equals("다음")) {
+						else if(message.equals("상식")) {
+							for(ClientManagerThread client : ChatServer.clients) {
+								int randomNum = (int)((Math.random()*18) + 1);
+								client.send(dbm.select("상식", randomNum, "상식"));
+								try {
+									Thread.sleep(200);
+								} catch(Exception e) {
+									System.out.println("sleep 오류");								}
+							}
+						}
+						
+						else if(message.length() >= 3 && message.substring(0, 3).equals("다음/")) {
 							count++;
-							if(count == ChatServer.name.size()) {
+							if(count == ChatServer.clients.size()) {
 								for(ClientManagerThread client : ChatServer.clients) {
-									int randomNum = (int)((Math.random()*10) + 1);
-									client.send(dbm.select("전공", randomNum));
+									int randomNum = 0;
+									
+									if(message.length() >= 3 && message.substring(3).equals("전공"))
+										randomNum = (int)((Math.random()*17) + 1);
+									else
+										randomNum = (int)((Math.random()*18) + 1);
+									client.send(dbm.select(message.substring(3), randomNum, message.substring(3)));
 									try {
 										Thread.sleep(200);
 									} catch(Exception e) {
-										e.printStackTrace();
+										System.out.println("sleep 오류");
 									}
 								}
 								
@@ -226,7 +248,7 @@ public class ClientManagerThread extends Thread{
 						}
 						
 						for(int i=0; i<ChatServer.name.size(); i++) {
-							if(message.length() >= 4 && message.substring(4).equals(ChatServer.name.get(i))) {
+							if(message.length() >= 4 && message.substring(4, message.length()).equals(ChatServer.name.get(i))) {
 								ChatServer.name.remove(i);
 								break;
 							}
@@ -238,7 +260,7 @@ public class ClientManagerThread extends Thread{
 							try {
 								Thread.sleep(200);
 							} catch(Exception e) {
-								e.printStackTrace();
+								System.out.println("DB출력오류");
 							}
 						}
 					}
@@ -250,7 +272,7 @@ public class ClientManagerThread extends Thread{
 						ChatServer.clients.remove(ClientManagerThread.this);
 						socket.close();
 					} catch(Exception e2) {
-						e2.printStackTrace();
+						System.out.println("e2오류");
 					}
 				}
 			}
@@ -259,7 +281,7 @@ public class ClientManagerThread extends Thread{
 		ChatServer.threadpool.submit(thread);
 	}
 	
-	public void send(String message) {
+	public synchronized void send(String message) {
 		Runnable thread = new Runnable() {
 			@Override
 			public void run() {
@@ -275,7 +297,7 @@ public class ClientManagerThread extends Thread{
 								+ ": " + Thread.currentThread().getName());
 						socket.close();
 					} catch(Exception e2) {
-						e2.printStackTrace();
+						System.out.println("e2오류");
 					}
 				}
 			}
