@@ -30,7 +30,7 @@ insert into 전공 values(19, '19.  vim에서 전환 할 수 있는 모드중 �
 insert into 전공 values(20, '20.  vim에서 파일을 강제 저장 후 종료하고싶을 때 사용하는 명령어는?', '1. :wq!', '2. :q!', '3. :e', '4.:w', 1);
 insert into 전공 values(21, '21.  현재 디렉토리에 git저장소를 생성하고싶을 때 사용하는 명령어는?', '1. git clone', '2. git add', '3. git init', '4. git push', 3);
 insert into 전공 values(22, '22.  내가 연결하고있는 서버를 확인하고싶을 때 사용하는 명령어는?', '1.   git remote -v', '2. git remote origin', '3. git remote rm', '4. git remote show', 1);
-insert into 전공 values(23, '23.  vim에서 커서의 위치 다음에 입력하고싶을 때 쓰는 키는?', '1. A', '2. o', '3. s', '4. a', a);
+insert into 전공 values(23, '23.  vim에서 커서의 위치 다음에 입력하고싶을 때 쓰는 키는?', '1. A', '2. o', '3. s', '4. a', 4);
 insert into 전공 values(24, '24.  현재 커서에서 한 글자를 삭제하고싶을 때 쓰는 키는? ', '1. x', '2. d', '3. dx', '4. dd', 1);
 insert into 전공 values(25, '25.  현재 폴더에서 상위 폴더로 돌아가고싶을 때 사용하는 명령어는?' , '1. cd ..', '2. cd', '3. cd return', '4. cd back', 1); 
 insert into 전공 values(26, '26.  vim표준모드에서 ZZ키를 입력하면 일어나는 현상으로 옳은것은?', '1. 저장', '2. vi 종료', '3. 저장 후 종료', '4. 강제 저장 후 종료', 3);
