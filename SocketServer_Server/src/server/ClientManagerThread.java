@@ -27,7 +27,7 @@ import javafx.stage.Stage;
 
 class DBManager {
 	String driver = "org.mariadb.jdbc.Driver";
-	String url = "jdbc:mysql://192.168.0.1:3306/test";
+	String url = "jdbc:mysql://" + ChatServer.serverIP + ":3306/test";
 	String uId = "root";
 	String uPwd = "1234";
 	
@@ -39,11 +39,11 @@ class DBManager {
 		try {
 			Class.forName(driver);
 			con = DriverManager.getConnection(url, uId, uPwd);
-			if(con != null) {System.out.println("µ¥ÀÌÅÍ º£ÀÌ½º Á¢¼Ó ¼º°ø");}
+			if(con != null) {System.out.println("ë°ì´í„° ë² ì´ìŠ¤ ì ‘ì† ì„±ê³µ");}
 		} catch(ClassNotFoundException e) {
-			System.out.println("µ¥ÀÌÅÍ º£ÀÌ½º ·Îµå ½ÇÆĞ");
+			System.out.println("ë°ì´í„° ë² ì´ìŠ¤ ë¡œë“œ ì‹¤íŒ¨");
 		} catch(SQLException e) {
-			System.out.println("µ¥ÀÌÅÍ º£ÀÌ½º Á¢¼Ó ½ÇÆĞ");
+			System.out.println("ë°ì´í„° ë² ì´ìŠ¤ ì ‘ì† ì‹¤íŒ¨");
 		}
 	}
 	
@@ -58,12 +58,12 @@ class DBManager {
 				Code = Code + temp + "\n";
 			}
 			
-			ChatServer.quizDB.setText("Á¢¼Ó ÁßÀÎ »ç¶÷\n------------\n");
+			ChatServer.quizDB.setText("ì ‘ì† ì¤‘ì¸ ì‚¬ëŒ\n------------\n");
 			ChatServer.quizDB.appendText(Code + "\n");
 		
 			return Code;
 		}catch(SQLException e) {
-			System.out.println("Äõ¸® ¼öÇà ½ÇÆĞ");
+			System.out.println("ì¿¼ë¦¬ ìˆ˜í–‰ ì‹¤íŒ¨");
 		}
 		
 		return "";
@@ -101,7 +101,7 @@ class DBManager {
 				return "mquiz" + name + "^" + quiznum + "^" + temp + "^" + Code2;
 			}
 		}catch(SQLException e) {
-			System.out.println("Äõ¸® ¼öÇà ½ÇÆĞ");
+			System.out.println("ì¿¼ë¦¬ ìˆ˜í–‰ ì‹¤íŒ¨");
 		}
 		
 		return null;
@@ -120,7 +120,7 @@ public class ClientManagerThread extends Thread{
 	}
 	
 	public void logingList() {
-		ChatServer.loging.setText("Á¢¼Ó ÁßÀÎ »ç¶÷\n------------\n");
+		ChatServer.loging.setText("ì ‘ì† ì¤‘ì¸ ì‚¬ëŒ\n------------\n");
 		for(int i=0; i<ChatServer.name.size(); i++) {
 			ChatServer.loging.appendText((ChatServer.name.get(i)).substring(5) + "\n");
 		}
@@ -138,13 +138,13 @@ public class ClientManagerThread extends Thread{
 						
 						int length = in.read(buffer);
 						if (length == -1) throw new IOException();
-						System.out.println("[¸Ş¼¼Áö ¼ö½Å ¼º°ø] "
+						System.out.println("[ë©”ì„¸ì§€ ìˆ˜ì‹  ì„±ê³µ] "
 								+ socket.getRemoteSocketAddress()
 								+ ": " + Thread.currentThread().getName());
 						
 						String message = new String(buffer, 0, length, "UTF-8");
 						
-						// ¿î¿µÀÚ Ã¢¿¡ À¯Àúµé Ãß°¡ÇÏ´Â ºÎºĞ
+						// ìš´ì˜ì ì°½ì— ìœ ì €ë“¤ ì¶”ê°€í•˜ëŠ” ë¶€ë¶„
 						if(message.length() > 5 && message.substring(0,5).equals("name:")) {
 							for(int i=0; i<ChatServer.name.size(); i++) {
 								if(ChatServer.name.get(i).equals(message)) {
@@ -157,27 +157,27 @@ public class ClientManagerThread extends Thread{
 							logingList();
 						}
 						
-						// Àü°øÀÌ¶ó´Â ÀÔ·ÂÀÌ ¿Ã½Ã ¹®Á¦ Ãâ·Â
+						// ì „ê³µì´ë¼ëŠ” ì…ë ¥ì´ ì˜¬ì‹œ ë¬¸ì œ ì¶œë ¥
 				
 						for(ClientManagerThread client : ChatServer.clients) {
 							if(message.length() > 5 && message.substring(0,5).equals("name:")) {
-								client.send("m" + Thread.currentThread().getName().substring(5) + "´ÔÀÌ ÀÔÀåÇÏ¿´½À´Ï´Ù.");
+								client.send("m" + Thread.currentThread().getName().substring(5) + "ë‹˜ì´ ì…ì¥í•˜ì˜€ìŠµë‹ˆë‹¤.");
 								for(int i=0; i<ChatServer.clients.size(); i++) {
 									try {
 										Thread.sleep(200);
 									} catch(Exception e) {
-										System.out.println("sleep ¿À·ù");									
+										System.out.println("sleep ì˜¤ë¥˜");									
 									}
 									client.send("userinfo" + ChatServer.name.get(i).substring(5));									
 								}
 							}
 							
 							else if(message.length() >= 4 && message.substring(0,4).equals("quit")) {
-								client.send("m" + Thread.currentThread().getName().substring(5) + "´ÔÀÌ Ã¤ÆÃ¹æÀ» ³ª°¬½À´Ï´Ù.");
+								client.send("m" + Thread.currentThread().getName().substring(5) + "ë‹˜ì´ ì±„íŒ…ë°©ì„ ë‚˜ê°”ìŠµë‹ˆë‹¤.");
 								client.send("delete" + Thread.currentThread().getName().substring(5));
 							}
 							
-							else if(message.length() >= 2 && message.substring(0,2).equals("´ä:")) {
+							else if(message.length() >= 2 && message.substring(0,2).equals("ë‹µ:")) {
 								send("m");
 							}
 							
@@ -196,42 +196,42 @@ public class ClientManagerThread extends Thread{
 								ChatServer.chatlog.appendText(message.substring(10) + "\n");
 							}
 							
-							else if(message.length() >= 3 && message.substring(0, 3).equals("´ÙÀ½/")) {}
+							else if(message.length() >= 3 && message.substring(0, 3).equals("ë‹¤ìŒ/")) {}
 							
 							else {
 								client.send("m" + Thread.currentThread().getName().substring(5) + " > " + message);
 							}
 						}https://github.com/OpenScourcelecture/OpenSource_A-Team-Server-.git
 						
-						if(message.equals("Àü°ø")) {
+						if(message.equals("ì „ê³µ")) {
 							for(ClientManagerThread client : ChatServer.clients) {
 								int randomNum = (int)((Math.random()*17) + 1);
-								client.send(dbm.select("Àü°ø", randomNum, "Àü°ø"));
+								client.send(dbm.select("ì „ê³µ", randomNum, "ì „ê³µ"));
 								try {
 									Thread.sleep(200);
 								} catch(Exception e) {
-									System.out.println("sleep ¿À·ù");								}
+									System.out.println("sleep ì˜¤ë¥˜");								}
 							}
 						}
 						
-						else if(message.equals("»ó½Ä")) {
+						else if(message.equals("ìƒì‹")) {
 							for(ClientManagerThread client : ChatServer.clients) {
 								int randomNum = (int)((Math.random()*18) + 1);
-								client.send(dbm.select("»ó½Ä", randomNum, "»ó½Ä"));
+								client.send(dbm.select("ìƒì‹", randomNum, "ìƒì‹"));
 								try {
 									Thread.sleep(200);
 								} catch(Exception e) {
-									System.out.println("sleep ¿À·ù");								}
+									System.out.println("sleep ì˜¤ë¥˜");								}
 							}
 						}
 						
-						else if(message.length() >= 3 && message.substring(0, 3).equals("´ÙÀ½/")) {
+						else if(message.length() >= 3 && message.substring(0, 3).equals("ë‹¤ìŒ/")) {
 							count++;
 							if(count == ChatServer.clients.size()) {
 								for(ClientManagerThread client : ChatServer.clients) {
 									int randomNum = 0;
 									
-									if(message.length() >= 3 && message.substring(3).equals("Àü°ø"))
+									if(message.length() >= 3 && message.substring(3).equals("ì „ê³µ"))
 										randomNum = (int)((Math.random()*17) + 1);
 									else
 										randomNum = (int)((Math.random()*18) + 1);
@@ -239,7 +239,7 @@ public class ClientManagerThread extends Thread{
 									try {
 										Thread.sleep(200);
 									} catch(Exception e) {
-										System.out.println("sleep ¿À·ù");
+										System.out.println("sleep ì˜¤ë¥˜");
 									}
 								}
 								
@@ -260,19 +260,19 @@ public class ClientManagerThread extends Thread{
 							try {
 								Thread.sleep(200);
 							} catch(Exception e) {
-								System.out.println("DBÃâ·Â¿À·ù");
+								System.out.println("DBì¶œë ¥ì˜¤ë¥˜");
 							}
 						}
 					}
 				} catch(Exception e) {
 					try {
-						System.out.println("[¸Ş¼¼Áö ¼ö½Å ¿À·ù] "
+						System.out.println("[ë©”ì„¸ì§€ ìˆ˜ì‹  ì˜¤ë¥˜] "
 								+ socket.getRemoteSocketAddress()
 								+ ": " + Thread.currentThread().getName());	
 						ChatServer.clients.remove(ClientManagerThread.this);
 						socket.close();
 					} catch(Exception e2) {
-						System.out.println("e2¿À·ù");
+						System.out.println("e2ì˜¤ë¥˜");
 					}
 				}
 			}
@@ -292,12 +292,12 @@ public class ClientManagerThread extends Thread{
 					out.flush();
 				} catch(Exception e) {
 					try {
-						System.out.println("[¸Ş¼¼Áö ¼Û½Å ¿À·ù] "
+						System.out.println("[ë©”ì„¸ì§€ ì†¡ì‹  ì˜¤ë¥˜] "
 								+ socket.getRemoteSocketAddress()
 								+ ": " + Thread.currentThread().getName());
 						socket.close();
 					} catch(Exception e2) {
-						System.out.println("e2¿À·ù");
+						System.out.println("e2ì˜¤ë¥˜");
 					}
 				}
 			}
