@@ -46,9 +46,9 @@ public class ChatServer extends Application{
 	static String resultLog = "";
 	
 	Scene scene;
-	static Label userNameLabel = new Label("À¯Àú ÀÌ¸§");
+	static Label userNameLabel = new Label("ìœ ì € ì´ë¦„");
 	static TextField userNameField = new TextField();
-	static Button dialogbutton = new Button("Á¢¼Ó");
+	static Button dialogbutton = new Button("ì ‘ì†");
 	HBox preRoot = new HBox(3.,userNameLabel,userNameField,dialogbutton);
 	static Dialog<setData> dialog = new Dialog<>();
 	static String serverIP = null;
@@ -57,8 +57,8 @@ public class ChatServer extends Application{
 	HBox root = new HBox();
 	static TextArea rootMessage = new TextArea("");
    	static TextArea chatlog = new TextArea("");
-   	static TextArea loging = new TextArea("Á¢¼Ó ÁßÀÎ »ç¶÷\n------------\n");
-   	static TextArea quizDB = new TextArea("ÄûÁî ¸ñ·Ï\n--------\n");
+   	static TextArea loging = new TextArea("ì ‘ì† ì¤‘ì¸ ì‚¬ëŒ\n------------\n");
+   	static TextArea quizDB = new TextArea("í€´ì¦ˆ ëª©ë¡\n--------\n");
    	static Button sendButton = new Button();
    	static GridPane grid;
 	static TextField chatField = new TextField();
@@ -70,10 +70,10 @@ public class ChatServer extends Application{
 	   		
 	   		root.setId("chatvbox");
 	   		
-	   		dialog.setTitle("ÀÌ¸§ ÀÔ·Â Ã¢");
+	   		dialog.setTitle("ì„œë²„ ì •ë³´ ì°½");
 	    	dialog.setHeaderText(null);
 	    	dialog.setContentText(null);
-	    	dialog.setContentText("ÀÌ¸§ : ");
+	    	dialog.setContentText("ì´ë¦„ : ");
 
 	    	ButtonType okButton = new ButtonType("OK", ButtonData.OK_DONE);
 	    	dialog.getDialogPane().getButtonTypes().addAll(okButton, ButtonType.CANCEL);
@@ -127,14 +127,14 @@ public class ChatServer extends Application{
 	    		
 	    		startServer(serverIP, Integer.parseInt(serverPort));
 	    		Platform.runLater(() -> {
-	    			chatlog.appendText("[ ¼­¹ö °¡µ¿ ]\n");
+	    			chatlog.appendText("[ ì„œë²„ ê°€ë™ ]\n");
 	    		});
 	    		
 	    		showSceneChanged(stage, root);
 	    	}
 	   		
-		   	root.setPadding(new Insets(10)); // ¾ÈÂÊ ¿©¹é ¼³Á¤
-		   	root.setSpacing(10); // ÄÁÆ®·Ñ °£ÀÇ ¼öÆò °£°İ ¼³Á¤
+		   	root.setPadding(new Insets(10)); // ì•ˆìª½ ì—¬ë°± ì„¤ì •
+		   	root.setSpacing(10); // ì»¨íŠ¸ë¡¤ ê°„ì˜ ìˆ˜í‰ ê°„ê²© ì„¤ì •
 		   	
 		   	chatlog.setOpacity(0.8);
 	    	chatlog.setEditable(false);
@@ -151,7 +151,7 @@ public class ChatServer extends Application{
 	    	quizDB.prefWidthProperty().bind(stage.widthProperty());
 	    	quizDB.prefHeightProperty().bind(stage.heightProperty());
 		    	
-	    	sendButton.setText("Àü ¼Û");
+	    	sendButton.setText("ì „ ì†¡");
 	    	sendButton.prefWidthProperty().bind(stage.widthProperty());
 	    	sendButton.setMaxWidth(1000);
 		    	
@@ -205,12 +205,12 @@ public class ChatServer extends Application{
 	
 		    Scene scene = new Scene(root, 500, 500);
 	
-	    	stage.setTitle("Ã¤ÆÃÃ¢");
+	    	stage.setTitle("ì±„íŒ…ì°½");
 	    	stage.setScene(scene);
 	    	stage.show();	
     	
     	} catch(Exception e) {
-    		System.out.println("JavaFX ¿À·ù");
+    		System.out.println("JavaFX ì˜¤ë¥˜");
     	}
 	}
 	
@@ -218,7 +218,7 @@ public class ChatServer extends Application{
     	stage.hide();
  
     	scene = new Scene(nextRoot, 500, 500);
-    	stage.setTitle("¼­¹ö ¿î¿µÀÚ Ã¢");
+    	stage.setTitle("ì„œë²„ ìš´ì˜ì ì°½");
     	scene.getStylesheets().clear();
     	scene.getStylesheets().add(getClass().getResource("./chatRoom.css").toExternalForm());
     	stage.setScene(scene); 
@@ -244,10 +244,10 @@ public class ChatServer extends Application{
 					try {
 						Socket socket = serverSocket.accept();
 						clients.add(new ClientManagerThread(socket));
-						System.out.println("[Å¬¶óÀÌ¾ğÆ® Á¢¼Ó] "
+						System.out.println("[í´ë¼ì´ì–¸íŠ¸ ì ‘ì†] "
 								+ socket.getRemoteSocketAddress()
 								+ ": " + Thread.currentThread().getName());
-						chatlog.appendText("[Å¬¶óÀÌ¾ğÆ® Á¢¼Ó] "
+						chatlog.appendText("[í´ë¼ì´ì–¸íŠ¸ ì ‘ì†] "
 								+ "\n" + socket.getRemoteSocketAddress()
 								+ ": " + Thread.currentThread().getName() + "\n");
 					} catch(Exception e) {
@@ -277,7 +277,7 @@ public class ChatServer extends Application{
 			if(threadpool != null && !threadpool.isShutdown())
 				threadpool.shutdown();
 		} catch(Exception e) {
-			System.out.println("¼­¹ö Á¾·á Áß ¿À·ù");
+			System.out.println("ì„œë²„ ì¢…ë£Œ ì¤‘ ì˜¤ë¥˜");
 		}
 	}
 	
