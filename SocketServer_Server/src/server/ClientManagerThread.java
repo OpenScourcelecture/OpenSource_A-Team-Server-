@@ -58,7 +58,7 @@ class DBManager {
 				Code = Code + temp + "\n";
 			}
 			
-			ChatServer.quizDB.setText("접속 중인 사람\n------------\n");
+			ChatServer.quizDB.setText("퀴즈 \n------------\n");
 			ChatServer.quizDB.appendText(Code + "\n");
 		
 			return Code;
